@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "windy"
+name = "windy-physics"
 version = "0.1.0"
