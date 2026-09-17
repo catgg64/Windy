@@ -1,4 +1,5 @@
 use std::{ops::{Add, Sub}, vec};
+pub mod gravity;
 pub mod shape;
 
 #[repr(C)]
@@ -39,9 +40,6 @@ impl Coordinate2D {
             shape::Shape2D::Rectangle2D(_) => {
                 true
             }
-            shape::Shape2D::Triangle2D(_) => {
-                true
-            } 
         }
     }
     
@@ -80,9 +78,6 @@ impl Coordinate2D {
 
                 false
             }
-            shape::Shape2D::Triangle2D(_) => {
-                true
-            } 
         }
     }
 }

@@ -1,13 +1,86 @@
-use std::{println, sync::Arc};
+use std::sync::Arc;
+use crate::Coordinate2D;
 
-trait CollisionObject {
-    fn has_implemented(other: &Shape2D) -> bool;
-    fn collide(&self, other: &Shape2D) -> bool;
-}
+pub fn collide(lhs: &Shape2D, rhs: &Shape2D) -> bool {
+    if match lhs {
+        Shape2D::Coordinate2D(lhs) => {
+            if Coordinate2D::has_implemented(rhs) {
+                return lhs.collide(rhs);
+            }
 
-fn collide(lhs: &Shape2D, rhs: &Shape2D) {
-    if (rhs) {
+            false
+        }
+        
+        Shape2D::Circle2D(lhs) => {
+            if Circle2D::has_implemented(rhs) {
+                return lhs.collide(rhs);
+            }
 
+            false
+        }
+
+        Shape2D::Line2D(lhs) => {
+            if Line2D::has_implemented(rhs) {
+                return lhs.collide(rhs);
+            }
+
+            false
+        }
+        Shape2D::Rectangle2D(lhs) => {
+            if Rectangle2D::has_implemented(rhs) {
+                return lhs.collide(rhs);
+            }
+
+            false
+        }
+        Shape2D::Mesh2D(lhs) => {
+            if Mesh2D::has_implemented(rhs) {
+                return lhs.collide(rhs);
+            }
+
+            false
+        }
+    } { return true; }
+    else {
+        match rhs {
+            Shape2D::Coordinate2D(rhs) => {
+                if Coordinate2D::has_implemented(lhs) {
+                    return rhs.collide(lhs);
+                }
+
+                false
+            }
+            
+            Shape2D::Circle2D(rhs) => {
+                if Circle2D::has_implemented(lhs) {
+                    return rhs.collide(lhs);
+                }
+
+                false
+            }
+
+            Shape2D::Line2D(rhs) => {
+                if Line2D::has_implemented(lhs) {
+                    return rhs.collide(lhs);
+                }
+
+                false
+            }
+            Shape2D::Rectangle2D(rhs) => {
+                if Rectangle2D::has_implemented(lhs) {
+                    return rhs.collide(lhs);
+                }
+
+                false
+            }
+            Shape2D::Mesh2D(left) => {
+                if Mesh2D::has_implemented(lhs) {
+                    return left.collide(lhs);
+                }
+
+                false
+            }
+        }
     }
 }
 
@@ -22,10 +95,8 @@ impl Line2D {
         //println!("{}, {}", d1, d2);
         c.x / c.y
     }
-}
-
-impl CollisionObject for Line2D {
-    fn has_implemented(other: &Shape2D) -> bool {
+    
+    pub fn has_implemented(other: &Shape2D) -> bool {
         match other {
             Shape2D::Coordinate2D(_) => {
                 true
@@ -42,13 +113,10 @@ impl CollisionObject for Line2D {
             Shape2D::Rectangle2D(_) => {
                 true
             }
-            Shape2D::Triangle2D(_) => {
-                false
-            } 
         }
     }
     
-    fn collide(&self, other: &Shape2D) -> bool {
+    pub fn collide(&self, other: &Shape2D) -> bool {
         match other {
             Shape2D::Coordinate2D(_) => {
                 false
@@ -63,7 +131,6 @@ impl CollisionObject for Line2D {
                 let y2 = self.1.y;
                 let y3 = line.0.y;
                 let y4 = line.1.y;
-                println!("{}, {}", ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)), ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)));
                 if ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) >= 0.0 && ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) <= 1.0 && ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) >= 0.0 {
                     return true
                 }
@@ -141,8 +208,8 @@ impl From<(crate::Coordinate2D, crate::Coordinate2D, crate::Coordinate2D)> for T
 #[derive(Debug, Clone)]
 pub struct Rectangle2D(pub crate::Coordinate2D, pub crate::Coordinate2D);
 
-impl CollisionObject for Rectangle2D {
-    fn has_implemented(other: &Shape2D) -> bool {
+impl Rectangle2D {
+    pub fn has_implemented(other: &Shape2D) -> bool {
         match other {
             Shape2D::Coordinate2D(_) => {
                 false
@@ -159,13 +226,10 @@ impl CollisionObject for Rectangle2D {
             Shape2D::Rectangle2D(_) => {
                 true
             }
-            Shape2D::Triangle2D(_) => {
-                false
-            } 
         }
     }
     
-    fn collide(&self, other: &Shape2D) -> bool {
+    pub fn collide(&self, other: &Shape2D) -> bool {
         match other {
             Shape2D::Rectangle2D(rect) => {
                 if rect.0.x + rect.1.x >= self.0.x 
@@ -183,12 +247,18 @@ impl CollisionObject for Rectangle2D {
     }
 }
 
+impl Into<Shape2D> for Rectangle2D {
+    fn into(self) -> Shape2D {
+        Shape2D::Rectangle2D(self)
+    }
+}
+
 #[repr(C)]
 #[derive(Debug, Clone)]
 pub struct Circle2D(pub crate::Coordinate2D, pub f64);
 
-impl CollisionObject for Circle2D {
-    fn has_implemented(other: &Shape2D) -> bool {
+impl Circle2D {
+    pub fn has_implemented(other: &Shape2D) -> bool {
         match other {
             Shape2D::Coordinate2D(_) => {
                 false
@@ -205,13 +275,10 @@ impl CollisionObject for Circle2D {
             Shape2D::Rectangle2D(_) => {
                 true
             }
-            Shape2D::Triangle2D(_) => {
-                false
-            } 
         }
     }
     
-    fn collide(&self, other: &Shape2D) -> bool {
+    pub fn collide(&self, other: &Shape2D) -> bool {
         match other {
             Shape2D::Circle2D(circle) => {
                 let dist_x = self.0.x - circle.0.x;
@@ -249,6 +316,12 @@ impl CollisionObject for Circle2D {
     }
 }
 
+impl Into<Shape2D> for Circle2D {
+    fn into(self) -> Shape2D {
+        Shape2D::Circle2D(self)
+    }
+}
+
 #[repr(C)]
 #[derive(Debug)]
 pub struct Mesh2D {
@@ -259,9 +332,8 @@ impl Mesh2D {
     pub fn new(coordinates: Vec<crate::Coordinate2D>) -> Self {
         Self { coordinates: Arc::new(coordinates) }
     }
-}
-impl CollisionObject for Mesh2D {
-    fn has_implemented(other: &Shape2D) -> bool {
+
+    pub fn has_implemented(other: &Shape2D) -> bool {
         match other {
             Shape2D::Coordinate2D(_) => {
                 true
@@ -278,13 +350,10 @@ impl CollisionObject for Mesh2D {
             Shape2D::Rectangle2D(_) => {
                 true
             }
-            Shape2D::Triangle2D(_) => {
-                false
-            } 
         }
     }
 
-    fn collide(&self, rhs: &Shape2D) -> bool {
+    pub fn collide(&self, rhs: &Shape2D) -> bool {
         match rhs {
             Shape2D::Coordinate2D(coordinate) => {
                 let px = coordinate.x;
@@ -376,8 +445,6 @@ impl CollisionObject for Mesh2D {
 
                 false
             }
-
-            _ => { false }
         }
     }
 }
@@ -388,10 +455,15 @@ impl Clone for Mesh2D {
     }
 }
 
+impl Into<Shape2D> for Mesh2D {
+    fn into(self) -> Shape2D {
+        Shape2D::Mesh2D(self)
+    }
+}
+
 pub enum Shape2D {
     Coordinate2D(crate::Coordinate2D),
     Line2D(Line2D),
-    Triangle2D(Triangle2D),
     Mesh2D(Mesh2D),
     Rectangle2D(Rectangle2D),
     Circle2D(Circle2D),
