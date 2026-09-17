@@ -130,7 +130,7 @@ impl Line2D {
                 false
             }
             Shape2D::Rectangle2D(_) => {
-                false
+                true
             }
             Shape2D::Triangle2D(_) => {
                 false
@@ -170,6 +170,31 @@ impl Line2D {
                 let dist_y = self.0.y - self.1.y;
                 let len = ((dist_x * dist_x) + (dist_y * dist_y)).sqrt();
                 let dot = ( ((circle.0.x-self.0.x)*(self.1.x-self.0.x)) + ((circle.0.y-self.0.y)*(self.1.y-self.0.y)) ) / f64::powf(len,2.0);
+                let closest_x = self.0.x + (dot * (self.1.x - self.0.x));
+                let closest_y = self.0.y + (dot * (self.1.y - self.0.y));
+
+                let on_segment = self.collide(&Shape2D::Coordinate2D(Coordinate2D{ x: closest_x, y: closest_y }));
+
+                if !on_segment { return false; }
+
+                let dist_x = closest_x - circle.0.x;
+                let dist_y = closest_y - circle.0.y;
+                let len = ((dist_x * dist_x) + (dist_y * dist_y)).sqrt();
+
+                if len <= circle.1 {
+                    return true;
+                }
+
+                false
+            }
+
+            Shape2D::Rectangle2D(rect) => {
+                if self.collide(&Shape2D::Line2D(Line2D(rect.0.clone(), Coordinate2D { x: rect.0.x + rect.1.x, y: rect.0.y }))) {
+                    return true;
+                }
+                else if self.collide(&Shape2D::Line2D(Line2D(rect.0.clone(), Coordinate2D { x: rect.0.x + rect.1.x, y: rect.0.y + rect.1.y }))) {
+                    return true;
+                }
 
                 false
             }
@@ -319,8 +344,8 @@ impl Mesh2D {
             Shape2D::Coordinate2D(coordinate) => {
                 let px = coordinate.x;
                 let py = coordinate.y;
+                let mut colliding = false;
                 for vc in 0..self.coordinates.len() {
-                    let mut colliding = false;
                     if vc < self.coordinates.len() {
                         let vn = &self.coordinates[vc + 1];
                         let vc = &self.coordinates[vc];
@@ -332,7 +357,7 @@ impl Mesh2D {
                     
                 }
 
-                false
+                colliding
             }
 
             _ => {panic!("not implemented")}
