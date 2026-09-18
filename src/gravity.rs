@@ -1,12 +1,28 @@
-use crate::shape::Mesh2D;
+use crate::{Coordinate2D, shape::Mesh2D};
 
 #[derive(Debug)]
 pub struct Object {
+    pub position: Coordinate2D,
     pub weight: f32,
     pub force: f32,
     pub mesh: Mesh2D,
 }
 
-pub struct PlanetObject {
-    pub objects: Vec<Object>,
+pub struct OrbitObject {
+    pub position: Coordinate2D,
+    pub weight: f32,
+}
+
+impl OrbitObject {
+    pub fn new(objects: Vec<Object>) -> Self {
+        let mut weight = 0.0;
+        let mut pos = Coordinate2D{ x: 0.0, y: 0.0 };
+        for object in &objects {
+            weight += object.weight;
+            pos += object.position.clone();
+        }
+        pos /= objects.len();
+
+        Self { position: pos, weight }
+    }
 }

@@ -1,4 +1,4 @@
-use std::{ops::{Add, Sub}, vec};
+use std::{ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign}, vec};
 pub mod gravity;
 pub mod shape;
 
@@ -90,11 +90,57 @@ impl Add for Coordinate2D {
     }
 }
 
+impl AddAssign for Coordinate2D {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x; self.y += rhs.y;
+    }
+}
+
 impl Sub for Coordinate2D {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         Self { x: self.x - rhs.x, y: self.y - rhs.y }
+    }
+}
+
+impl SubAssign for Coordinate2D {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.x -= rhs.x; self.y -= rhs.y;
+    }
+}
+
+impl Mul for Coordinate2D {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self { x: self.x * rhs.x, y: self.y * rhs.y }
+    }
+}
+
+impl MulAssign for Coordinate2D {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.x /= rhs.x; self.y /= rhs.y;
+    }
+}
+
+impl Div for Coordinate2D {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        Self { x: self.x / rhs.x, y: self.y / rhs.y }
+    }
+}
+
+impl DivAssign for Coordinate2D {
+    fn div_assign(&mut self, rhs: Self) {
+        self.x /= rhs.x; self.y /= rhs.y;
+    }
+}
+
+impl DivAssign<usize> for Coordinate2D {
+    fn div_assign(&mut self, rhs: usize) {
+        self.x /= rhs as f64; self.y /= rhs as f64;
     }
 }
 
