@@ -177,9 +177,19 @@ impl From<(Coordinate3D, Coordinate3D, Coordinate3D)> for Triangle3D {
     }
 }
 
+pub struct WindyContext {
+
+}
+
+impl WindyContext {
+    pub fn default() -> Self {
+        Self {  }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::assert_eq;
+    use std::{assert_eq, println};
 
     use super::*;
 

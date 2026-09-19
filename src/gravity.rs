@@ -1,4 +1,4 @@
-use crate::{Coordinate2D, shape::Mesh2D};
+use crate::{Coordinate2D, WindyContext, shape::Mesh2D};
 
 #[derive(Debug)]
 pub struct Object {
@@ -26,3 +26,23 @@ impl OrbitObject {
         Self { position: pos, weight }
     }
 }
+
+// pub enum Space {
+//     Objects(Vec<Object>),
+//     OrbitObjects(Vec<OrbitObject>),
+// }
+
+// fn calculate_gravitational_pull(windy_context: WindyContext, space: Space, position: Coordinate2D) -> (f32, f32) {
+//     match space {
+//         Space::Objects(objects) => {
+//             let angle = 0.0;
+//             let strengh = 0.0;
+//             for object in objects {
+//                 let object_position = object.position;
+                
+//             } 
+
+//             (angle, strengh)
+//         }
+//     }
+// }

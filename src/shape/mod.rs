@@ -95,6 +95,17 @@ impl Line2D {
         //println!("{}, {}", d1, d2);
         c.x / c.y
     }
+
+    pub fn angle(&self) -> f64 {
+        self.1.y - self.0.y.atan2(self.1.x - self.0.x)
+    }
+
+    pub fn distance(&self) -> f64 {
+        let dist_x = self.0.x - self.1.x;
+        let dist_y = self.0.y - self.1.y;
+
+        ((dist_x * dist_x) + (dist_y * dist_y)).sqrt()
+    }
     
     pub fn has_implemented(other: &Shape2D) -> bool {
         match other {
