@@ -97,7 +97,9 @@ impl Line2D {
     }
 
     pub fn angle(&self) -> f64 {
-        self.1.y - self.0.y.atan2(self.1.x - self.0.x)
+        let angle = (self.1.y - self.0.y).atan2(self.1.x - self.0.x);
+
+        angle
     }
 
     pub fn distance(&self) -> f64 {

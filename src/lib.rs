@@ -2,6 +2,8 @@ use std::{ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign},
 pub mod gravity;
 pub mod shape;
 
+const PI: f64 = 3.141592653589793;
+
 #[repr(C)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Coordinate2D {
@@ -178,18 +180,18 @@ impl From<(Coordinate3D, Coordinate3D, Coordinate3D)> for Triangle3D {
 }
 
 pub struct WindyContext {
-
+    weight_dividor: f64,
 }
 
 impl WindyContext {
     pub fn default() -> Self {
-        Self {  }
+        Self { weight_dividor: 10.0 }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{assert_eq, println};
+    use std::assert_eq;
 
     use super::*;
 
