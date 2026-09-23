@@ -1,6 +1,8 @@
 use std::{ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign}, vec};
+use twodimensional::shape::Mesh2D;
+
 pub mod gravity;
-pub mod shape;
+pub mod twodimensional;
 
 const PI: f64 = 3.141592653589793;
 
@@ -25,39 +27,39 @@ impl Coordinate2D {
         c.x / c.y
     }
 
-    pub fn has_implemented(other: &shape::Shape2D) -> bool {
+    pub fn has_implemented(other: &twodimensional::shape::Shape2D) -> bool {
         match other {
-            shape::Shape2D::Coordinate2D(_) => {
+            twodimensional::shape::Shape2D::Coordinate2D(_) => {
                 true
             }
-            shape::Shape2D::Line2D(_) => {
+            twodimensional::shape::Shape2D::Line2D(_) => {
                 false
             }
-            shape::Shape2D::Circle2D(_) => {
+            twodimensional::shape::Shape2D::Circle2D(_) => {
                 true
             }
-            shape::Shape2D::Mesh2D(_) => {
+            twodimensional::shape::Shape2D::Mesh2D(_) => {
                 true
             }
-            shape::Shape2D::Rectangle2D(_) => {
+            twodimensional::shape::Shape2D::Rectangle2D(_) => {
                 true
             }
         }
     }
     
-    pub fn collide(&self, other: &shape::Shape2D) -> bool {
+    pub fn collide(&self, other: &twodimensional::shape::Shape2D) -> bool {
         match other {
-            shape::Shape2D::Coordinate2D(coordinate) => {
+            twodimensional::shape::Shape2D::Coordinate2D(coordinate) => {
                 if self.x == coordinate.x && self.y == coordinate.y {
                     return true;
                 }
                 
                 false
             }
-            shape::Shape2D::Line2D(_) => {
+            twodimensional::shape::Shape2D::Line2D(_) => {
                 true
             }
-            shape::Shape2D::Circle2D(circle) => {
+            twodimensional::shape::Shape2D::Circle2D(circle) => {
                 let dist_x = self.x - circle.0.x;
                 let dist_y = self.y - circle.0.y;
                 let distance = ((dist_x * dist_x) + (dist_y * dist_y)).sqrt();
@@ -67,10 +69,10 @@ impl Coordinate2D {
 
                 false
             }
-            shape::Shape2D::Mesh2D(_) => {
+            twodimensional::shape::Shape2D::Mesh2D(_) => {
                 true
             }
-            shape::Shape2D::Rectangle2D(rect) => {
+            twodimensional::shape::Shape2D::Rectangle2D(rect) => {
                 if rect.0.x > self.x
                 && rect.0.x + rect.1.x < self.x
                 && rect.0.y > self.y
@@ -179,6 +181,17 @@ impl From<(Coordinate3D, Coordinate3D, Coordinate3D)> for Triangle3D {
     }
 }
 
+pub trait Object {
+    fn get_position(&self) -> &Coordinate2D;
+    fn set_position(&mut self, position: &Coordinate2D);
+    fn get_mass(&self) -> f64;
+    fn get_force(&self) -> f32;
+    fn get_mesh(&self) -> &Mesh2D;
+    fn rotate(&self, angle: f64);
+    fn colliding(&self, other: &Mesh2D) -> bool;
+}
+
+
 pub struct WindyContext {
     weight_dividor: f64,
 }
@@ -229,56 +242,56 @@ mod tests {
 
     #[test]
     fn line2d_collision_1() {
-        let line: shape::Line2D = shape::Line2D(Coordinate2D{ x: 0.1, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
-        let line_2: shape::Line2D = shape::Line2D(Coordinate2D{ x: 0.2, y: 0.2}, Coordinate2D{ x: 0.3, y: 0.6, });
+        let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: 0.1, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
+        let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: 0.2, y: 0.2}, Coordinate2D{ x: 0.3, y: 0.6, });
 
         assert!(!line.collide(&line_2.into()))
     }
    
     #[test]
     fn line2d_collision_2() { 
-        let line: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
-        let line_2: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.2, y: 0.7}, Coordinate2D{ x: 0.3, y: 0.3, });
+        let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
+        let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.2, y: 0.7}, Coordinate2D{ x: 0.3, y: 0.3, });
 
         assert!(line.collide(&line_2.into()))
     }
 
     #[test]
     fn line2d_collision_3() { 
-        let line: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
-        let line_2: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.6, y: 0.2}, Coordinate2D{ x: 0.3, y: 0.3, });
+        let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
+        let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.6, y: 0.2}, Coordinate2D{ x: 0.3, y: 0.3, });
 
         assert!(line.collide(&line_2.into()))
     }
 
     #[test]
     fn line2d_collision_4() { 
-        let line: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
-        let line_2: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.6, y: -0.2}, Coordinate2D{ x: 0.3, y: 0.3, });
+        let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
+        let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.6, y: -0.2}, Coordinate2D{ x: 0.3, y: 0.3, });
 
         assert!(!line.collide(&line_2.into()))
     }
 
     #[test]
     fn line2d_collision_5() { 
-        let line: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
-        let line_2: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.6, y: -0.2}, Coordinate2D{ x: 0.3, y: 0.7, });
+        let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
+        let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.6, y: -0.2}, Coordinate2D{ x: 0.3, y: 0.7, });
 
         assert!(line.collide(&line_2.into()))
     }
     
     #[test]
     fn line2d_collision_6() { 
-        let line: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
-        let line_2: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.6, y: 0.0}, Coordinate2D{ x: 0.3, y: 0.7, });
+        let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
+        let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.6, y: 0.0}, Coordinate2D{ x: 0.3, y: 0.7, });
 
         assert!(!line.collide(&line_2.into()))
     }
 
     #[test]
     fn line2d_collision_7() { 
-        let line: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
-        let line_2: shape::Line2D = shape::Line2D(Coordinate2D{ x: -0.5, y: 0.0}, Coordinate2D{ x: -0.2, y: 0.7, });
+        let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
+        let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.5, y: 0.0}, Coordinate2D{ x: -0.2, y: 0.7, });
 
         assert!(!line.collide(&line_2.into()))
     }
