@@ -1,4 +1,4 @@
-use std::{ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign}, vec};
+use std::{any::Any, collections::HashMap, hash::Hash, ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign}, sync::Arc, vec};
 use twodimensional::shape::Mesh2D;
 
 pub mod gravity;
@@ -183,14 +183,43 @@ impl From<(Coordinate3D, Coordinate3D, Coordinate3D)> for Triangle3D {
 
 pub trait Object {
     fn get_position(&self) -> &Coordinate2D;
-    fn set_position(&mut self, position: &Coordinate2D);
+    fn set_position(&mut self, position: Coordinate2D);
     fn get_mass(&self) -> f64;
     fn get_force(&self) -> f32;
-    fn get_mesh(&self) -> &Mesh2D;
     fn rotate(&self, angle: f64);
-    fn colliding(&self, other: &Mesh2D) -> bool;
 }
 
+pub trait CollisionObject: Any {
+    fn colliding(&self, other: &dyn Any) -> bool;
+}
+
+pub struct CollisionHash<T: CollisionObject> {
+    hash: HashMap<Arc<T>, (Arc<T>, bool)>,
+}
+
+impl<T: CollisionObject + 'static + Eq + Hash> CollisionHash<T> {
+    pub fn new(objects: Vec<Arc<T>>) -> Self {
+        let mut hash: HashMap<Arc<T>, (Arc<T>, bool)> = HashMap::new();
+        
+        for object in &objects {
+            for object_2 in &objects {
+                if !std::ptr::eq(object, object_2) {
+                    hash.insert(object.clone(), (object_2.clone(), object.colliding(object_2)));
+                }
+            }
+        }
+
+        Self { hash }
+    }
+
+    pub fn contains(&self, k: &T) -> bool {
+        if self.hash.contains_key(k) {
+            return true;
+        }
+
+        false
+    }
+}
 
 pub struct WindyContext {
     weight_dividor: f64,
