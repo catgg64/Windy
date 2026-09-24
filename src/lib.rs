@@ -244,7 +244,7 @@ mod tests {
         let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: 0.1, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
         let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: 0.2, y: 0.2}, Coordinate2D{ x: 0.3, y: 0.6, });
 
-        assert!(!line.collide(&line_2.into()))
+        assert!(!line.colliding(&line_2))
     }
    
     #[test]
@@ -252,7 +252,7 @@ mod tests {
         let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
         let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.2, y: 0.7}, Coordinate2D{ x: 0.3, y: 0.3, });
 
-        assert!(line.collide(&line_2.into()))
+        assert!(line.colliding(&line_2))
     }
 
     #[test]
@@ -260,7 +260,7 @@ mod tests {
         let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
         let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.6, y: 0.2}, Coordinate2D{ x: 0.3, y: 0.3, });
 
-        assert!(line.collide(&line_2.into()))
+        assert!(line.colliding(&line_2))
     }
 
     #[test]
@@ -268,7 +268,7 @@ mod tests {
         let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
         let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.6, y: -0.2}, Coordinate2D{ x: 0.3, y: 0.3, });
 
-        assert!(!line.collide(&line_2.into()))
+        assert!(!line.colliding(&line_2))
     }
 
     #[test]
@@ -276,7 +276,7 @@ mod tests {
         let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
         let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.6, y: -0.2}, Coordinate2D{ x: 0.3, y: 0.7, });
 
-        assert!(line.collide(&line_2.into()))
+        assert!(line.colliding(&line_2))
     }
     
     #[test]
@@ -284,7 +284,7 @@ mod tests {
         let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
         let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.6, y: 0.0}, Coordinate2D{ x: 0.3, y: 0.7, });
 
-        assert!(!line.collide(&line_2.into()))
+        assert!(!line.colliding(&line_2))
     }
 
     #[test]
@@ -292,6 +292,6 @@ mod tests {
         let line: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.4, y: 0.1}, Coordinate2D{ x: 0.2, y: 0.5, });
         let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.5, y: 0.0}, Coordinate2D{ x: -0.2, y: 0.7, });
 
-        assert!(!line.collide(&line_2.into()))
+        assert!(!line.colliding(&line_2))
     }
 }

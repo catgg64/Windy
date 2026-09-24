@@ -1,89 +1,6 @@
 use std::{sync::Arc, vec};
 use crate::Coordinate2D;
 
-pub fn collide(lhs: &Shape2D, rhs: &Shape2D) -> bool {
-    if match lhs {
-        Shape2D::Coordinate2D(lhs) => {
-            if Coordinate2D::has_implemented(rhs) {
-                return lhs.collide(rhs);
-            }
-
-            false
-        }
-        
-        Shape2D::Circle2D(lhs) => {
-            if Circle2D::has_implemented(rhs) {
-                return lhs.collide(rhs);
-            }
-
-            false
-        }
-
-        Shape2D::Line2D(lhs) => {
-            if Line2D::has_implemented(rhs) {
-                return lhs.collide(rhs);
-            }
-
-            false
-        }
-        Shape2D::Rectangle2D(lhs) => {
-            if Rectangle2D::has_implemented(rhs) {
-                return lhs.collide(rhs);
-            }
-
-            false
-        }
-        Shape2D::Mesh2D(lhs) => {
-            if Mesh2D::has_implemented(rhs) {
-                return lhs.collide(rhs);
-            }
-
-            false
-        }
-    } { return true; }
-    else {
-        match rhs {
-            Shape2D::Coordinate2D(rhs) => {
-                if Coordinate2D::has_implemented(lhs) {
-                    return rhs.collide(lhs);
-                }
-
-                false
-            }
-            
-            Shape2D::Circle2D(rhs) => {
-                if Circle2D::has_implemented(lhs) {
-                    return rhs.collide(lhs);
-                }
-
-                false
-            }
-
-            Shape2D::Line2D(rhs) => {
-                if Line2D::has_implemented(lhs) {
-                    return rhs.collide(lhs);
-                }
-
-                false
-            }
-            Shape2D::Rectangle2D(rhs) => {
-                if Rectangle2D::has_implemented(lhs) {
-                    return rhs.collide(lhs);
-                }
-
-                false
-            }
-            Shape2D::Mesh2D(left) => {
-                if Mesh2D::has_implemented(lhs) {
-                    return left.collide(lhs);
-                }
-
-                false
-            }
-        }
-    }
-}
-
 #[repr(C)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Line2D(pub crate::Coordinate2D, pub crate::Coordinate2D);
@@ -150,8 +67,8 @@ impl Mesh2D {
 
         for coordinate in self.coordinates.iter() {
             let set_coordinate = coordinate.clone() - origin.clone();
-            set_coordinate.
-            new_mesh.push(coordinate.clone() - origin.clone());
+            //set_coordinate.
+            //new_mesh.push(coordinate.clone() - origin.clone());
         }
     }
 }
