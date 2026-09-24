@@ -1,8 +1,8 @@
 use std::{any::Any, collections::HashMap, hash::Hash, ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign}, sync::Arc, vec};
-use twodimensional::shape::Mesh2D;
 
 pub mod gravity;
 pub mod twodimensional;
+pub mod math;
 
 const PI: f64 = 3.141592653589793;
 
@@ -26,63 +26,27 @@ impl Coordinate2D {
         let c = Coordinate2D{ x: self.x - rhs.x, y: self.y - rhs.y };
         c.x / c.y
     }
+}
 
-    pub fn has_implemented(other: &twodimensional::shape::Shape2D) -> bool {
-        match other {
-            twodimensional::shape::Shape2D::Coordinate2D(_) => {
-                true
-            }
-            twodimensional::shape::Shape2D::Line2D(_) => {
-                false
-            }
-            twodimensional::shape::Shape2D::Circle2D(_) => {
-                true
-            }
-            twodimensional::shape::Shape2D::Mesh2D(_) => {
-                true
-            }
-            twodimensional::shape::Shape2D::Rectangle2D(_) => {
-                true
-            }
+impl CollisionObject for Coordinate2D {
+    fn colliding(&self, other: &dyn Any) -> bool {
+        if let Some(coordinate) = other.downcast_ref::<Coordinate2D>() {
+            return crate::twodimensional::collision::collision_coordinate_coordinate(self, coordinate);
         }
-    }
-    
-    pub fn collide(&self, other: &twodimensional::shape::Shape2D) -> bool {
-        match other {
-            twodimensional::shape::Shape2D::Coordinate2D(coordinate) => {
-                if self.x == coordinate.x && self.y == coordinate.y {
-                    return true;
-                }
-                
-                false
-            }
-            twodimensional::shape::Shape2D::Line2D(_) => {
-                true
-            }
-            twodimensional::shape::Shape2D::Circle2D(circle) => {
-                let dist_x = self.x - circle.0.x;
-                let dist_y = self.y - circle.0.y;
-                let distance = ((dist_x * dist_x) + (dist_y * dist_y)).sqrt();
-                if distance < circle.1 {
-                    return true;
-                }
-
-                false
-            }
-            twodimensional::shape::Shape2D::Mesh2D(_) => {
-                true
-            }
-            twodimensional::shape::Shape2D::Rectangle2D(rect) => {
-                if rect.0.x > self.x
-                && rect.0.x + rect.1.x < self.x
-                && rect.0.y > self.y
-                && rect.0.y + rect.1.y < self.y {
-                    return true;
-                }
-
-                false
-            }
+        if let Some(circle) = other.downcast_ref::<crate::twodimensional::shape::Circle2D>() {
+            return crate::twodimensional::collision::collision_coordinate_circle(self, circle);
         }
+        if let Some(rect) = other.downcast_ref::<crate::twodimensional::shape::Rectangle2D>() {
+            return crate::twodimensional::collision::collision_coordinate_rect(self, rect);
+        }
+        if let Some(line) = other.downcast_ref::<crate::twodimensional::shape::Line2D>() {
+            return crate::twodimensional::collision::collision_line_coordinate(line, self);
+        }
+        if let Some(mesh) = other.downcast_ref::<crate::twodimensional::shape::Mesh2D>() {
+            return crate::twodimensional::collision::collision_mesh_coordinate(mesh, self);
+        }
+
+        false
     }
 }
 
@@ -145,6 +109,12 @@ impl DivAssign for Coordinate2D {
 impl DivAssign<usize> for Coordinate2D {
     fn div_assign(&mut self, rhs: usize) {
         self.x /= rhs as f64; self.y /= rhs as f64;
+    }
+}
+
+impl Into<(f64, f64)> for Coordinate2D {
+    fn into(self) -> (f64, f64) {
+        (self.x, self.y)
     }
 }
 

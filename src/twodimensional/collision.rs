@@ -1,6 +1,36 @@
-use crate::{Coordinate2D, twodimensional::shape::{Circle2D, Line2D, Mesh2D, Rectangle2D, Shape2D}};
+use crate::{Coordinate2D, math, twodimensional::shape::{Circle2D, Line2D, Mesh2D, Rectangle2D, Shape2D}};
 
-fn collision_line_line(a: &Line2D, b: &Line2D) -> bool {
+pub fn collision_coordinate_coordinate(a: &Coordinate2D, b: &Coordinate2D) -> bool {
+    if a.x == b.x && a.y == b.y {
+        return true;
+    }
+    
+    false
+}
+
+pub fn collision_coordinate_circle(a: &Coordinate2D, b: &Circle2D) -> bool {
+    let dist_x = a.x - b.0.x;
+    let dist_y = a.y - b.0.y;
+    let distance = ((dist_x * dist_x) + (dist_y * dist_y)).sqrt();
+    if distance < b.1 {
+        return true;
+    }
+
+    false
+}
+
+pub fn collision_coordinate_rect(a: &Coordinate2D, b: &Rectangle2D) -> bool {
+    if b.0.x > a.x
+    && b.0.x + b.1.x < a.x
+    && b.0.y > a.y
+    && b.0.y + b.1.y < a.y {
+        return true;
+    }
+
+    false
+}
+
+pub fn collision_line_line(a: &Line2D, b: &Line2D) -> bool {
     let x1 = a.0.x;
     let x2 = a.1.x;
     let x3 = b.0.x;
@@ -16,9 +46,21 @@ fn collision_line_line(a: &Line2D, b: &Line2D) -> bool {
     false       
 }
 
-fn collision_line_circle(a: &Line2D, b: &Circle2D) -> bool {
-    let inside_0 = a.0.collide(b);
-    let inside_1 = a.1.collide(b);
+pub fn collision_line_coordinate(a: &Line2D, b: &Coordinate2D) -> bool {
+    let line_len = math::dist(a.0.clone().into(), a.1.clone().into());
+    let d1 = math::dist(b.clone().into(), a.0.clone().into());
+    let d2 = math::dist(b.clone().into(), a.1.clone().into());
+
+    if d1 + d2 >= line_len {
+        return true;
+    }
+
+    false
+}
+
+pub fn collision_line_circle(a: &Line2D, b: &Circle2D) -> bool {
+    let inside_0 = collision_coordinate_circle(&a.0, b);
+    let inside_1 = collision_coordinate_circle(&a.1, b);
 
     if inside_0 || inside_1 { return true; }
 
@@ -44,7 +86,7 @@ fn collision_line_circle(a: &Line2D, b: &Circle2D) -> bool {
     false
 }
 
-fn collision_line_rect(a: &Line2D, b: &Rectangle2D) -> bool {
+pub fn collision_line_rect(a: &Line2D, b: &Rectangle2D) -> bool {
     if collision_line_line(a, &Line2D(b.0.clone(), crate::Coordinate2D { x: b.0.x + b.1.x, y: b.0.y })) {
         return true;
     }
@@ -61,7 +103,7 @@ fn collision_line_rect(a: &Line2D, b: &Rectangle2D) -> bool {
     false
 }
 
-fn collision_rect_rect(a: &Rectangle2D, b: &Rectangle2D) -> bool {
+pub fn collision_rect_rect(a: &Rectangle2D, b: &Rectangle2D) -> bool {
     if b.0.x + b.1.x >= a.0.x 
     && b.0.x <= a.0.x + a.1.x
     && b.0.y + b.1.y >= a.0.y 
@@ -72,7 +114,7 @@ fn collision_rect_rect(a: &Rectangle2D, b: &Rectangle2D) -> bool {
     false
 }
 
-fn collision_circle_circle(a: &Circle2D, b: &Circle2D) -> bool {
+pub fn collision_circle_circle(a: &Circle2D, b: &Circle2D) -> bool {
     let dist_x = a.0.x - b.0.x;
     let dist_y = a.0.y - b.0.y;
 
@@ -83,7 +125,7 @@ fn collision_circle_circle(a: &Circle2D, b: &Circle2D) -> bool {
     false
 }
 
-fn collision_circle_rect(a: &Circle2D, b: &Rectangle2D) -> bool {
+pub fn collision_circle_rect(a: &Circle2D, b: &Rectangle2D) -> bool {
     let mut test_x = a.0.x;
     let mut test_y = a.0.y;
 
@@ -103,7 +145,7 @@ fn collision_circle_rect(a: &Circle2D, b: &Rectangle2D) -> bool {
     false
 }
 
-fn collision_mesh_coordinate(a: &Mesh2D, b: &Coordinate2D) -> bool {
+pub fn collision_mesh_coordinate(a: &Mesh2D, b: &Coordinate2D) -> bool {
     let px = b.x;
     let py = b.y;
     let mut colliding = false;
@@ -122,7 +164,60 @@ fn collision_mesh_coordinate(a: &Mesh2D, b: &Coordinate2D) -> bool {
     colliding
 }
 
-fn collision_mesh_line(a: &Mesh2D, b: &Line2D) -> bool {
+pub fn collision_mesh_line(a: &Mesh2D, b: &Line2D) -> bool {
+    for vc in 0..a.coordinates.len() {
+        if vc < a.coordinates.len() {
+            let vn = &a.coordinates[vc + 1];
+            let vc = &a.coordinates[vc];
+            
+            if collision_line_line(b, &Line2D(vn.clone(), vc.clone())) {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
+pub fn collision_mesh_circle(a: &Mesh2D, b: &Circle2D) -> bool {
+    for vc in 0..a.coordinates.len() {
+        if vc < a.coordinates.len() {
+            let vn = &a.coordinates[vc + 1];
+            let vc = &a.coordinates[vc];
+
+            if collision_line_circle(&Line2D(vn.clone(), vc.clone()), b) {
+                return true;
+            }
+        }
+    }
+
+    if collision_mesh_coordinate(a, &b.0) {
+        return true;
+    }
+
+    false
+}
+
+pub fn collision_mesh_rect(a: &Mesh2D, b: &Rectangle2D) -> bool {
+    for vc in 0..a.coordinates.len() {
+        if vc < a.coordinates.len() {
+            let vn = &a.coordinates[vc + 1];
+            let vc = &a.coordinates[vc];
+            
+            if collision_line_rect(&Line2D(vn.clone(), vc.clone()), b) {
+                return true;
+            }
+        }
+    }
+
+    if collision_mesh_coordinate(a, &b.0) {
+        return true;
+    }
+
+    false
+}
+
+pub fn collision_mesh_mesh(a: &Mesh2D, b: &Mesh2D) -> bool {
     for vc in 0..a.coordinates.len() {
         if vc < a.coordinates.len() {
             let vn = &a.coordinates[vc + 1];
@@ -132,6 +227,10 @@ fn collision_mesh_line(a: &Mesh2D, b: &Line2D) -> bool {
                 return true;
             }
         }
+    }
+
+    if collision_mesh_coordinate(a, &b.coordinates[0]) {
+        return true;
     }
 
     false
