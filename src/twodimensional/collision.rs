@@ -1,4 +1,141 @@
-use crate::twodimensional::shape::{Circle2D, Line2D, Mesh2D, Rectangle2D, Shape2D};
+use crate::{Coordinate2D, twodimensional::shape::{Circle2D, Line2D, Mesh2D, Rectangle2D, Shape2D}};
+
+fn collision_line_line(a: &Line2D, b: &Line2D) -> bool {
+    let x1 = a.0.x;
+    let x2 = a.1.x;
+    let x3 = b.0.x;
+    let x4 = b.1.x;
+    let y1 = a.0.y;
+    let y2 = a.1.y;
+    let y3 = b.0.y;
+    let y4 = b.1.y;
+    if ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) >= 0.0 && ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) <= 1.0 && ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) >= 0.0 {
+        return true
+    }
+
+    false       
+}
+
+fn collision_line_circle(a: &Line2D, b: &Circle2D) -> bool {
+    let inside_0 = a.0.collide(b);
+    let inside_1 = a.1.collide(b);
+
+    if inside_0 || inside_1 { return true; }
+
+    let dist_x = a.0.x - a.1.x;
+    let dist_y = a.0.y - a.1.y;
+    let len = ((dist_x * dist_x) + (dist_y * dist_y)).sqrt();
+    let dot = ( ((b.0.x-a.0.x)*(a.1.x-a.0.x)) + ((b.0.y-a.0.y)*(a.1.y-a.0.y)) ) / f64::powf(len,2.0);
+    let closest_x = a.0.x + (dot * (a.1.x - a.0.x));
+    let closest_y = a.0.y + (dot * (a.1.y - a.0.y));
+
+    let on_segment = a.collide(&Shape2D::Coordinate2D(crate::Coordinate2D{ x: closest_x, y: closest_y }));
+
+    if !on_segment { return false; }
+
+    let dist_x = closest_x - b.0.x;
+    let dist_y = closest_y - b.0.y;
+    let len = ((dist_x * dist_x) + (dist_y * dist_y)).sqrt();
+
+    if len <= b.1 {
+        return true;
+    }
+
+    false
+}
+
+fn collision_line_rect(a: &Line2D, b: &Rectangle2D) -> bool {
+    if collision_line_line(a, &Line2D(b.0.clone(), crate::Coordinate2D { x: b.0.x + b.1.x, y: b.0.y })) {
+        return true;
+    }
+    else if collision_line_line(a, &Line2D(b.0.clone(), crate::Coordinate2D { x: b.0.x + b.1.x, y: b.0.y + b.1.y })) {
+        return true;
+    }
+    else if collision_line_line(a, &Line2D(b.0.clone(), crate::Coordinate2D { x: b.0.x, y: b.0.y})) {
+        return true;
+    }
+    else if collision_line_line(a, &Line2D(b.0.clone(), crate::Coordinate2D { x: b.0.x, y: b.0.y + b.1.y })) {
+        return true;
+    }
+
+    false
+}
+
+fn collision_rect_rect(a: &Rectangle2D, b: &Rectangle2D) -> bool {
+    if b.0.x + b.1.x >= a.0.x 
+    && b.0.x <= a.0.x + a.1.x
+    && b.0.y + b.1.y >= a.0.y 
+    && b.0.y <= a.0.y + a.1.y {
+        return true;
+    }
+
+    false
+}
+
+fn collision_circle_circle(a: &Circle2D, b: &Circle2D) -> bool {
+    let dist_x = a.0.x - b.0.x;
+    let dist_y = a.0.y - b.0.y;
+
+    if ((dist_x * dist_x) + (dist_y * dist_y)).sqrt() <= a.1 + b.1 {
+        return true;
+    }
+    
+    false
+}
+
+fn collision_circle_rect(a: &Circle2D, b: &Rectangle2D) -> bool {
+    let mut test_x = a.0.x;
+    let mut test_y = a.0.y;
+
+    if a.0.x < b.0.x { test_x = b.0.x }
+    else if a.0.x > b.0.x + b.1.x { test_x = b.0.x + b.1.x }
+
+    if a.0.y < b.0.y { test_y = b.0.y }
+    else if a.0.y > b.0.y + b.1.y { test_y = b.0.y + b.1.y }
+
+    let dist_x = a.0.x - test_x;
+    let dist_y = a.0.y - test_y;
+
+    if ((dist_x * dist_x) + (dist_y * dist_y)).sqrt() <= a.1 {
+        return true;
+    }
+
+    false
+}
+
+fn collision_mesh_coordinate(a: &Mesh2D, b: &Coordinate2D) -> bool {
+    let px = b.x;
+    let py = b.y;
+    let mut colliding = false;
+    for vc in 0..a.coordinates.len() {
+        if vc < a.coordinates.len() {
+            let vn = &a.coordinates[vc + 1];
+            let vc = &a.coordinates[vc];
+            if ((vc.y > py) != (vn.y > py)) && (px < (vn.x-vc.x) * (py-vc.y) / (vn.y-vc.y) + vc.x) {
+                colliding = !colliding
+            }
+        }
+        
+        
+    }
+
+    colliding
+}
+
+fn collision_mesh_line(a: &Mesh2D, b: &Line2D) -> bool {
+    for vc in 0..a.coordinates.len() {
+        if vc < a.coordinates.len() {
+            let vn = &a.coordinates[vc + 1];
+            let vc = &a.coordinates[vc];
+            
+            if b.collide(&Shape2D::Line2D(Line2D(vn.clone(), vc.clone()))) {
+                return true;
+            }
+        }
+    }
+
+    false
+}
 
 impl Line2D {
     pub fn has_implemented(other: &Shape2D) -> bool {

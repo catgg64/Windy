@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, vec};
 use crate::Coordinate2D;
 
 pub fn collide(lhs: &Shape2D, rhs: &Shape2D) -> bool {
@@ -143,6 +143,16 @@ pub struct Mesh2D {
 impl Mesh2D {
     pub fn new(coordinates: Vec<crate::Coordinate2D>) -> Self {
         Self { coordinates: Arc::new(coordinates) }
+    }
+
+    pub fn rotate(&mut self, angle: f64, origin: Coordinate2D) {
+        let mut new_mesh: Vec<crate::Coordinate2D> = vec![];
+
+        for coordinate in self.coordinates.iter() {
+            let set_coordinate = coordinate.clone() - origin.clone();
+            set_coordinate.
+            new_mesh.push(coordinate.clone() - origin.clone());
+        }
     }
 }
 
