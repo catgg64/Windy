@@ -8,8 +8,6 @@ pub struct Line2D(pub crate::Coordinate2D, pub crate::Coordinate2D);
 impl Line2D {
     pub fn subtract_and_divide(&self) -> f64 {
         let c = crate::Coordinate2D{ x: self.0.x - self.1.x, y: self.0.y - self.1.y};
-        //println!("{:?}", c.y / c.x);
-        //println!("{}, {}", d1, d2);
         c.x / c.y
     }
 
@@ -54,28 +52,22 @@ pub struct Circle2D(pub crate::Coordinate2D, pub f64);
 #[repr(C)]
 #[derive(Debug)]
 pub struct Mesh2D {
-    pub coordinates: Arc<Vec<crate::Coordinate2D>>
+    pub coordinates: Vec<crate::Coordinate2D>
 }
 
 impl Mesh2D {
     pub fn new(coordinates: Vec<crate::Coordinate2D>) -> Self {
-        Self { coordinates: Arc::new(coordinates) }
+        Self { coordinates: coordinates }
     }
 
-    pub fn rotate(&mut self, angle: f64, origin: Coordinate2D) {
-        let mut new_mesh: Vec<crate::Coordinate2D> = vec![];
-
-        for coordinate in self.coordinates.iter() {
-            let set_coordinate = coordinate.clone() - origin.clone();
-            //set_coordinate.
-            //new_mesh.push(coordinate.clone() - origin.clone());
+    pub fn rotate(&mut self, angle: f64, origin: &Coordinate2D) {
+        for coordinate in self.coordinates.iter_mut() {
+            *coordinate -= origin.clone();
+            let future_x = coordinate.x * angle.cos() - coordinate.y * angle.sin();
+            let future_y = coordinate.x * angle.sin() + coordinate.y * angle.cos();
+            *coordinate = Coordinate2D{ x: future_x, y: future_y };
+            *coordinate += origin.clone();
         }
-    }
-}
-
-impl Clone for Mesh2D {
-    fn clone(&self) -> Self {
-        Self { coordinates: self.coordinates.clone() }
     }
 }
 

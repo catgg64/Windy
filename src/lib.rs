@@ -156,25 +156,25 @@ pub trait Object {
     fn set_position(&mut self, position: Coordinate2D);
     fn get_mass(&self) -> f64;
     fn get_force(&self) -> f32;
-    fn rotate(&self, angle: f64);
+    fn rotate(&mut self, angle: f64);
 }
 
 pub trait CollisionObject: Any {
     fn colliding(&self, other: &dyn Any) -> bool;
 }
 
-pub struct CollisionHash<T: CollisionObject> {
-    hash: HashMap<Arc<T>, (Arc<T>, bool)>,
+pub struct CollisionHash<'a, T: CollisionObject> {
+    hash: HashMap<&'a T, (&'a T, bool)>,
 }
 
-impl<T: CollisionObject + 'static + Eq + Hash> CollisionHash<T> {
-    pub fn new(objects: Vec<Arc<T>>) -> Self {
-        let mut hash: HashMap<Arc<T>, (Arc<T>, bool)> = HashMap::new();
+impl<T: CollisionObject + 'static + Eq + Hash> CollisionHash<'_, T> {
+    pub fn new(objects: Vec<&T>) -> Self {
+        let mut hash: HashMap<&T, (&T, bool)> = HashMap::new();
         
-        for object in &objects {
-            for object_2 in &objects {
+        for object in objects {
+            for object_2 in objects {
                 if !std::ptr::eq(object, object_2) {
-                    hash.insert(object.clone(), (object_2.clone(), object.colliding(object_2)));
+                    hash.insert(object, (object_2, object.colliding(object_2)));
                 }
             }
         }
