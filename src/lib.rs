@@ -155,44 +155,21 @@ pub trait Object {
     fn get_position(&self) -> &Coordinate2D;
     fn set_position(&mut self, position: Coordinate2D);
     fn get_mass(&self) -> f64;
-    fn get_force(&self) -> f32;
+    fn get_force(&self) -> f64;
+    fn set_force(&mut self, force: f64);
+    fn get_direction(&self) -> f64;
+    fn set_direction(&mut self, direction: f64);
     fn rotate(&mut self, angle: f64);
+    fn colliding_with_array(&mut self, array: Vec<&dyn Any>);
+    fn is_colliding(&self) -> bool;
 }
 
 pub trait CollisionObject: Any {
     fn colliding(&self, other: &dyn Any) -> bool;
 }
 
-pub struct CollisionHash<'a, T: CollisionObject> {
-    hash: HashMap<&'a T, (&'a T, bool)>,
-}
-
-impl<T: CollisionObject + 'static + Eq + Hash> CollisionHash<'_, T> {
-    pub fn new(objects: Vec<&T>) -> Self {
-        let mut hash: HashMap<&T, (&T, bool)> = HashMap::new();
-        
-        for object in objects {
-            for object_2 in objects {
-                if !std::ptr::eq(object, object_2) {
-                    hash.insert(object, (object_2, object.colliding(object_2)));
-                }
-            }
-        }
-
-        Self { hash }
-    }
-
-    pub fn contains(&self, k: &T) -> bool {
-        if self.hash.contains_key(k) {
-            return true;
-        }
-
-        false
-    }
-}
-
 pub struct WindyContext {
-    weight_dividor: f64,
+    pub weight_dividor: f64,
 }
 
 impl WindyContext {

@@ -149,15 +149,13 @@ pub fn collision_mesh_coordinate(a: &Mesh2D, b: &Coordinate2D) -> bool {
     let px = b.x;
     let py = b.y;
     let mut colliding = false;
-    for vc in 0..a.coordinates.len() {
-        if vc < a.coordinates.len() {
-            let vn = &a.coordinates[vc + 1];
-            let vc = &a.coordinates[vc];
-            if ((vc.y > py) != (vn.y > py)) && (px < (vn.x-vc.x) * (py-vc.y) / (vn.y-vc.y) + vc.x) {
-                colliding = !colliding
-            }
+    for i in 0..a.coordinates.len() {
+        let vc = &a.coordinates[i];
+        let vn = &a.coordinates[(i + 1) % a.coordinates.len()];
+        if ((vc.y > py) != (vn.y > py)) && (px < (vn.x-vc.x) * (py-vc.y) / (vn.y-vc.y) + vc.x) {
+            colliding = !colliding
         }
-        
+    
         
     }
 

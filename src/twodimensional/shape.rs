@@ -52,12 +52,13 @@ pub struct Circle2D(pub crate::Coordinate2D, pub f64);
 #[repr(C)]
 #[derive(Debug)]
 pub struct Mesh2D {
-    pub coordinates: Vec<crate::Coordinate2D>
+    pub coordinates: Vec<crate::Coordinate2D>,
+    pub origin: Coordinate2D,
 }
 
 impl Mesh2D {
-    pub fn new(coordinates: Vec<crate::Coordinate2D>) -> Self {
-        Self { coordinates: coordinates }
+    pub fn new(coordinates: Vec<crate::Coordinate2D>, origin: Coordinate2D) -> Self {
+        Self { coordinates, origin }
     }
 
     pub fn rotate(&mut self, angle: f64, origin: &Coordinate2D) {
