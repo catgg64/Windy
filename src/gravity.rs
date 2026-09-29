@@ -15,18 +15,18 @@ pub fn calculate_gravitational_pull<T: Object>(windy_context: WindyContext, obje
     (angle, strengh / windy_context.weight_dividor)
 }
 
-pub fn calculate_physics_step<T: Object, F>(windy_context: &WindyContext, objects: &mut Vec<T>, pull_angle: f64, dt: Duration, mut collision_check_equasion: F)
-    where F: FnMut() 
-    {
-        for object in objects.iter_mut() {
-            object.set_force(object.get_force() + object.get_mass() / windy_context.weight_dividor * dt.as_secs_f64());
-            object.set_direction((object.get_direction() + pull_angle) / 2.0);
-            object.set_position(object.get_position().clone() - Coordinate2D{ x: object.get_force() * object.get_direction().cos() * dt.as_secs_f64(), y: object.get_force() * object.get_direction().sin() * dt.as_secs_f64() });
+pub fn calculate_physics_step<T: Object>(windy_context: &WindyContext, objects: &mut Vec<T>, pull_angle: f64, dt: Duration) {
+    for object in objects.iter_mut() {
+        object.set_force(object.get_force() + object.get_mass() / windy_context.weight_dividor * dt.as_secs_f64());
+        object.set_direction((object.get_direction() + pull_angle) / 2.0);
+        object.set_position(object.get_position().clone() - Coordinate2D{ x: object.get_force() * object.get_direction().cos() * dt.as_secs_f64(), y: object.get_force() * object.get_direction().sin() * dt.as_secs_f64() });
+    }
+}
+
+pub fn calculate_collision_pushback<T: Object>(objects: &mut Vec<T>, dt: Duration) {
+    for object in objects.iter_mut() {
+        if object.is_colliding() {
+            object.set_position(object.get_position().clone() + Coordinate2D{ x: object.get_force() * object.get_direction().cos() * dt.as_secs_f64(), y: object.get_force() * object.get_direction().sin() * dt.as_secs_f64() });
         }
-        collision_check_equasion();
-        for object in objects.iter_mut() {
-            if object.is_colliding() {
-                object.set_position(object.get_position().clone() + Coordinate2D{ x: object.get_force() * object.get_direction().cos() * dt.as_secs_f64(), y: object.get_force() * object.get_direction().sin() * dt.as_secs_f64() });
-            }
-        }
+    }
 }

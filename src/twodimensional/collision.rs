@@ -39,7 +39,7 @@ pub fn collision_line_line(a: &Line2D, b: &Line2D) -> bool {
     let y2 = a.1.y;
     let y3 = b.0.y;
     let y4 = b.1.y;
-    if ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) >= 0.0 && ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) <= 1.0 && ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) >= 0.0 {
+    if ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) >= 0.0 && ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) <= 1.0 && ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) <= 1.0 && ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)) >= 0.0 {
         return true
     }
 
@@ -51,7 +51,9 @@ pub fn collision_line_coordinate(a: &Line2D, b: &Coordinate2D) -> bool {
     let d1 = math::dist(b.clone().into(), a.0.clone().into());
     let d2 = math::dist(b.clone().into(), a.1.clone().into());
 
-    if d1 + d2 >= line_len {
+    let epslion = 0.00001;
+
+    if d1 + d2 <= line_len + epslion {
         return true;
     }
 
@@ -153,7 +155,6 @@ pub fn collision_mesh_coordinate(a: &Mesh2D, b: &Coordinate2D) -> bool {
         let vc = &(a.coordinates[i] + a.origin);
         let vn = &(a.coordinates[(i + 1) % a.coordinates.len()] + a.origin);
 
-
         if ((vc.y > py) != (vn.y > py)) && (px < (vn.x-vc.x) * (py-vc.y) / (vn.y-vc.y) + vc.x) {
             colliding = !colliding
         }
@@ -164,14 +165,12 @@ pub fn collision_mesh_coordinate(a: &Mesh2D, b: &Coordinate2D) -> bool {
 }
 
 pub fn collision_mesh_line(a: &Mesh2D, b: &Line2D) -> bool {
-    for vc in 0..a.coordinates.len() {
-        if vc < a.coordinates.len() {
-            let vn = &a.coordinates[vc + 1];
-            let vc = &a.coordinates[vc];
-            
-            if collision_line_line(b, &Line2D(vn.clone(), vc.clone())) {
-                return true;
-            }
+    for i in 0..a.coordinates.len() {
+        let vc = &(a.coordinates[i] + a.origin);
+        let vn = &(a.coordinates[(i + 1) % a.coordinates.len()] + a.origin);
+
+        if collision_line_line(b, &Line2D(vn.clone(), vc.clone())) {
+            return true;
         }
     }
 
@@ -179,14 +178,12 @@ pub fn collision_mesh_line(a: &Mesh2D, b: &Line2D) -> bool {
 }
 
 pub fn collision_mesh_circle(a: &Mesh2D, b: &Circle2D) -> bool {
-    for vc in 0..a.coordinates.len() {
-        if vc < a.coordinates.len() {
-            let vn = &a.coordinates[vc + 1];
-            let vc = &a.coordinates[vc];
+    for i in 0..a.coordinates.len() {
+    let vc = &(a.coordinates[i] + a.origin);
+    let vn = &(a.coordinates[(i + 1) % a.coordinates.len()] + a.origin);
 
-            if collision_line_circle(&Line2D(vn.clone(), vc.clone()), b) {
-                return true;
-            }
+        if collision_line_circle(&Line2D(vn.clone(), vc.clone()), b) {
+            return true;
         }
     }
 
@@ -198,14 +195,12 @@ pub fn collision_mesh_circle(a: &Mesh2D, b: &Circle2D) -> bool {
 }
 
 pub fn collision_mesh_rect(a: &Mesh2D, b: &Rectangle2D) -> bool {
-    for vc in 0..a.coordinates.len() {
-        if vc < a.coordinates.len() {
-            let vn = &a.coordinates[vc + 1];
-            let vc = &a.coordinates[vc];
-            
-            if collision_line_rect(&Line2D(vn.clone(), vc.clone()), b) {
-                return true;
-            }
+    for i in 0..a.coordinates.len() {
+        let vc = &(a.coordinates[i] + a.origin);
+        let vn = &(a.coordinates[(i + 1) % a.coordinates.len()] + a.origin);
+
+        if collision_line_rect(&Line2D(vn.clone(), vc.clone()), b) {
+            return true;
         }
     }
 
@@ -217,18 +212,16 @@ pub fn collision_mesh_rect(a: &Mesh2D, b: &Rectangle2D) -> bool {
 }
 
 pub fn collision_mesh_mesh(a: &Mesh2D, b: &Mesh2D) -> bool {
-    for vc in 0..a.coordinates.len() {
-        if vc < a.coordinates.len() {
-            let vn = &a.coordinates[vc + 1];
-            let vc = &a.coordinates[vc];
-            
-            if collision_mesh_line(b, &Line2D(vn.clone(), vc.clone())) {
-                return true;
-            }
+    for i in 0..a.coordinates.len() {
+        let vc = &(a.coordinates[i] + a.origin);
+        let vn = &(a.coordinates[(i + 1) % a.coordinates.len()] + a.origin);
+
+        if collision_mesh_line(b, &Line2D(vc.clone(), vn.clone())) {
+            return true;
         }
     }
 
-    if collision_mesh_coordinate(a, &b.coordinates[0]) {
+    if collision_mesh_coordinate(a, &(b.coordinates[0] + b.origin)) {
         return true;
     }
 
