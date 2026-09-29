@@ -1,13 +1,13 @@
-use std::{any::Any, collections::HashMap, hash::Hash, ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign}, sync::Arc, vec};
+use std::{any::Any, ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign},  vec};
 
 pub mod gravity;
 pub mod twodimensional;
 pub mod math;
 
-const PI: f64 = 3.141592653589793;
+pub const PI: f64 = 3.141592653589793;
 
 #[repr(C)]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Coordinate2D {
     pub x: f64,
     pub y: f64,
@@ -160,7 +160,7 @@ pub trait Object {
     fn get_direction(&self) -> f64;
     fn set_direction(&mut self, direction: f64);
     fn rotate(&mut self, angle: f64);
-    fn colliding_with_array(&mut self, array: Vec<&dyn Any>);
+    fn colliding(&mut self, object: &dyn Any);
     fn is_colliding(&self) -> bool;
 }
 

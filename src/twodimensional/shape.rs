@@ -1,4 +1,3 @@
-use std::{sync::Arc, vec};
 use crate::Coordinate2D;
 
 #[repr(C)]
