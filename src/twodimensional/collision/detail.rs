@@ -56,7 +56,7 @@ pub fn detailed_collision_mesh_mesh(a: &Mesh2D, b: &Mesh2D) -> DetailedCollision
 
         let is_colliding = detailed_collision_mesh_line(b, &Line2D(vc.clone(), vn.clone())); 
         if let Some(is_colliding) = is_colliding {
-            collision.collision.push(DetailedPoint { point: is_colliding, angle: ((Line2D(*vc, *vn).angle() + PI / 2.0) % PI).abs(), penetration: 0.0 });
+            collision.collision.push(DetailedPoint { point: is_colliding, angle: Line2D(*vc, *vn).angle(), penetration: 0.0 });
         }
     }
 

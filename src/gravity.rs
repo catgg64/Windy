@@ -1,4 +1,4 @@
-use std::{time::Duration};
+use std::{f64::consts::PI, println, time::Duration};
 
 use crate::{Coordinate2D, Object, WindyContext, twodimensional::shape::Line2D};
 
@@ -25,8 +25,42 @@ pub fn calculate_physics_step<T: Object>(windy_context: &WindyContext, objects: 
 
 pub fn calculate_collision_pushback<T: Object>(objects: &mut Vec<T>, dt: Duration) {
     for object in objects.iter_mut() {
-        if !object.get_collision_info().is_empty() {
-            object.set_position(object.get_position().clone() + Coordinate2D{ x: object.get_force() * object.get_direction().cos() * dt.as_secs_f64(), y: object.get_force() * object.get_direction().sin() * dt.as_secs_f64() });
+        let mut new_direction = 0.0;
+
+        let collisions = object.get_collision_info();
+        if !collisions.is_empty() {
+            for collision in collisions {
+                for point in &collision.collision {
+                    let object_direction = object.get_direction();
+                    //if object_direction > point.angle && object_direction < point.angle * PI {
+                        let value = ((point.angle + PI / 2.0) % PI).abs();
+                        println!("{}", value);
+                        if new_direction.is_none() {
+                            new_direction = Some(value);
+                        }
+                        else {
+                            if let Some(new_new_direction) = new_direction {
+                                new_direction = Some((value + new_new_direction) / 2.0);
+                            }
+                        }
+                    }
+                    if object_direction < point.angle && object_direction > point.angle * PI {
+                        println!("here");
+                        if new_direction.is_none() {
+                            new_direction = Some(((point.angle + PI / 2.0) % PI));
+                        }
+                        else {
+                            if let Some(new_new_direction) = new_direction {
+                                new_direction = Some((((point.angle + PI / 2.0) % PI) + new_new_direction) / 2.0);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if let Some(direction) = new_direction {
+            object.set_direction(direction);
         }
     }
 }
