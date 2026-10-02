@@ -24,12 +24,6 @@ impl Line2D {
     }
 }
 
-impl Into<Shape2D> for Line2D {
-    fn into(self) -> Shape2D {
-        Shape2D::Line2D(self)
-    }
-}
-
 #[repr(C)]
 #[derive(Debug, Clone)]
 pub struct Triangle2D(pub crate::Coordinate2D, pub crate::Coordinate2D, pub crate::Coordinate2D);
@@ -69,12 +63,4 @@ impl Mesh2D {
             *coordinate += origin.clone();
         }
     }
-}
-
-pub enum Shape2D {
-    Coordinate2D(crate::Coordinate2D),
-    Line2D(Line2D),
-    Mesh2D(Mesh2D),
-    Rectangle2D(Rectangle2D),
-    Circle2D(Circle2D),
 }

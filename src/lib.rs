@@ -160,8 +160,7 @@ pub trait Object {
     fn get_direction(&self) -> f64;
     fn set_direction(&mut self, direction: f64);
     fn rotate(&mut self, angle: f64);
-    fn colliding(&mut self, object: &dyn Any);
-    fn is_colliding(&self) -> bool;
+    fn get_collision_info(&self) -> &Vec<twodimensional::collision::detail::DetailedCollision>;
 }
 
 pub trait CollisionObject: Any {

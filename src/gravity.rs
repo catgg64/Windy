@@ -25,7 +25,7 @@ pub fn calculate_physics_step<T: Object>(windy_context: &WindyContext, objects: 
 
 pub fn calculate_collision_pushback<T: Object>(objects: &mut Vec<T>, dt: Duration) {
     for object in objects.iter_mut() {
-        if object.is_colliding() {
+        if !object.get_collision_info().is_empty() {
             object.set_position(object.get_position().clone() + Coordinate2D{ x: object.get_force() * object.get_direction().cos() * dt.as_secs_f64(), y: object.get_force() * object.get_direction().sin() * dt.as_secs_f64() });
         }
     }

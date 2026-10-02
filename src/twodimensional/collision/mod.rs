@@ -1,4 +1,6 @@
-use crate::{CollisionObject, Coordinate2D, math, twodimensional::shape::{Circle2D, Line2D, Mesh2D, Rectangle2D, Shape2D}};
+use crate::{CollisionObject, Coordinate2D, math, twodimensional::shape::{Circle2D, Line2D, Mesh2D, Rectangle2D}};
+
+pub mod detail;
 
 pub fn collision_coordinate_coordinate(a: &Coordinate2D, b: &Coordinate2D) -> bool {
     if a.x == b.x && a.y == b.y {
@@ -272,12 +274,6 @@ impl CollisionObject for Rectangle2D {
     }
 }
 
-impl Into<Shape2D> for Rectangle2D {
-    fn into(self) -> Shape2D {
-        Shape2D::Rectangle2D(self)
-    }
-}
-
 impl CollisionObject for Circle2D {
     fn colliding(&self, other: &dyn std::any::Any) -> bool {
         if let Some(coordinate) = other.downcast_ref::<Coordinate2D>() {
@@ -297,34 +293,6 @@ impl CollisionObject for Circle2D {
         }
 
         false
-    }
-}
-
-impl Into<Shape2D> for Circle2D {
-    fn into(self) -> Shape2D {
-        Shape2D::Circle2D(self)
-    }
-}
-
-impl Mesh2D {
-    pub fn has_implemented(other: &Shape2D) -> bool {
-        match other {
-            Shape2D::Coordinate2D(_) => {
-                true
-            }
-            Shape2D::Line2D(_) => {
-                true
-            }
-            Shape2D::Circle2D(_) => {
-                true
-            }
-            Shape2D::Mesh2D(_) => {
-                true
-            }
-            Shape2D::Rectangle2D(_) => {
-                true
-            }
-        }
     }
 }
     
@@ -347,12 +315,5 @@ impl CollisionObject for Mesh2D {
         }
 
         false
-    }
-}
-
-
-impl Into<Shape2D> for Mesh2D {
-    fn into(self) -> Shape2D {
-        Shape2D::Mesh2D(self)
     }
 }
