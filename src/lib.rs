@@ -155,10 +155,27 @@ pub trait Object {
     fn get_position(&self) -> &Coordinate2D;
     fn set_position(&mut self, position: Coordinate2D);
     fn get_mass(&self) -> f64;
-    fn get_forces(&self) -> Vec<(f64, f64)>;
-    fn add_force(&mut self, velocity: (f64, f64));
+    fn get_velocity(&self) -> (f64, f64);
+    fn set_velocity(&mut self, velocity: (f64, f64));
     fn rotate(&mut self, angle: f64);
     fn get_collision_info(&self) -> &Vec<twodimensional::collision::detail::DetailedCollision>;
+}
+
+pub fn add_force_to_object<T: Object>(object: &mut T, force: (f64, f64)) {
+    // let object_direction = object.get_direction();
+    // let object_velocity = object.get_velocity();
+    // let object_simplified_direction = Coordinate2D {
+    //     x: object_direction.cos() * object_velocity,
+    //     y: object_direction.sin() * object_velocity,
+    // };
+    // let input_simplified_direction = Coordinate2D {
+    //     x: angle.cos() * force,
+    //     y: angle.sin() * force,
+    // };
+
+    // let sum = object_simplified_direction + input_simplified_direction;
+    // let rad_sum = sum.y.atan2(sum.x);
+    // let sum_without_force = 
 }
 
 pub trait CollisionObject: Any {
@@ -177,7 +194,7 @@ impl WindyContext {
 
 #[cfg(test)]
 mod tests {
-    use std::assert_eq;
+    use std::{assert_eq, println};
 
     use super::*;
 
@@ -267,5 +284,11 @@ mod tests {
         let line_2: twodimensional::shape::Line2D = twodimensional::shape::Line2D(Coordinate2D{ x: -0.5, y: 0.0}, Coordinate2D{ x: -0.2, y: 0.7, });
 
         assert!(!line.colliding(&line_2))
+    }
+    
+    #[test]
+    fn value_between_ratio_1() {
+        println!("{}", crate::math::value_within_ratio(1.0, 2.0, 2.0, 4.0, 1.5));
+        assert!(crate::math::value_within_ratio(1.0, 2.0, 2.0, 4.0, 1.5) == 3.0)
     }
 }
