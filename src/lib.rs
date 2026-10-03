@@ -155,10 +155,8 @@ pub trait Object {
     fn get_position(&self) -> &Coordinate2D;
     fn set_position(&mut self, position: Coordinate2D);
     fn get_mass(&self) -> f64;
-    fn get_force(&self) -> f64;
-    fn set_force(&mut self, force: f64);
-    fn get_direction(&self) -> f64;
-    fn set_direction(&mut self, direction: f64);
+    fn get_forces(&self) -> Vec<(f64, f64)>;
+    fn add_force(&mut self, velocity: (f64, f64));
     fn rotate(&mut self, angle: f64);
     fn get_collision_info(&self) -> &Vec<twodimensional::collision::detail::DetailedCollision>;
 }
