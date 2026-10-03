@@ -157,25 +157,9 @@ pub trait Object {
     fn get_mass(&self) -> f64;
     fn get_velocity(&self) -> (f64, f64);
     fn set_velocity(&mut self, velocity: (f64, f64));
+    fn get_elasticity(&self) -> f64;
     fn rotate(&mut self, angle: f64);
     fn get_collision_info(&self) -> &Vec<twodimensional::collision::detail::DetailedCollision>;
-}
-
-pub fn add_force_to_object<T: Object>(object: &mut T, force: (f64, f64)) {
-    // let object_direction = object.get_direction();
-    // let object_velocity = object.get_velocity();
-    // let object_simplified_direction = Coordinate2D {
-    //     x: object_direction.cos() * object_velocity,
-    //     y: object_direction.sin() * object_velocity,
-    // };
-    // let input_simplified_direction = Coordinate2D {
-    //     x: angle.cos() * force,
-    //     y: angle.sin() * force,
-    // };
-
-    // let sum = object_simplified_direction + input_simplified_direction;
-    // let rad_sum = sum.y.atan2(sum.x);
-    // let sum_without_force = 
 }
 
 pub trait CollisionObject: Any {

@@ -29,42 +29,112 @@ pub fn calculate_physics_step<T: Object>(windy_context: &WindyContext, objects: 
 pub fn calculate_collision_pushback<T: Object>(objects: &mut Vec<T>, dt: Duration) {
     for object in objects.iter_mut() {
         let mut changed_direction = false;
-        let mut new_force = (0.0, 0.0);
+        let mut new_force = None;
 
+        
         let collisions = object.get_collision_info();
+        println!("{}", collisions.len());
         if !collisions.is_empty() {
-            for collision in collisions {
-                for point in &collision.collision {
-                    let object_velocity = object.get_velocity();
-                    let movement = Coordinate2D {
-                        x: object_velocity.0,
-                        y: object_velocity.1,
-                    };
-                    
-                    let mut normal = Coordinate2D {
-                        x: (point.angle + PI / 2.0).cos(),
-                        y: (point.angle + PI / 2.0).sin(),
-                    };
-                    
-                    let dot =
-                        movement.x * normal.x +
-                        movement.y * normal.y;
-                    
-                    if dot > 0.0 {
-                        normal.x = -normal.x;
-                        normal.y = -normal.y;
+            if !collisions[0].collision.is_empty() {
+                let point = &collisions[0].collision[0];
+                let object_velocity = object.get_velocity();
+                let movement = Coordinate2D {
+                    x: object_velocity.0,
+                    y: object_velocity.1,
+                };
+                
+                let dx = point.edge.1.x - point.edge.0.x;
+                let dy = point.edge.1.y - point.edge.0.y;
+    
+                let mut normal = Coordinate2D {
+                    x: -dy,
+                    y: dx,
+                };
+    
+                let length = (normal.x * normal.x + normal.y * normal.y).sqrt();
+    
+                normal.x /= length;
+                normal.y /= length;
+                
+                let dot =
+                    movement.x * normal.x +
+                    movement.y * normal.y;
+                
+                
+                if dot > 0.0 {
+                    normal.x = -normal.x;
+                    normal.y = -normal.y;
+                }
+    
+                let vn =
+                    object_velocity.0 * normal.x +
+                    object_velocity.1 * normal.y;
+    
+                if vn < 0.0 {
+                    let e = object.get_elasticity();
+    
+                    if new_force.is_none() {
+                        new_force = Some((
+                            object_velocity.0 - (1.0 + e) * vn * normal.x,
+                            object_velocity.1 - (1.0 + e) * vn * normal.y,
+                        ));
                     }
-
-                    //let push_angle = normal.y.atan2(normal.x);
-                    
-                    new_force = (normal.x, normal.y);
+                    else {
+                        if let Some(new_new_force) = new_force {
+                            new_force = Some((
+                                (object_velocity.0 - (1.0 + e) * vn * normal.x + new_new_force.0) / 2.0,
+                                (object_velocity.1 - (1.0 + e) * vn * normal.y + new_new_force.1) / 2.0,
+                            ));
+                            
+                        }
+                    }
+    
                     changed_direction = true;
                 }
+                println!(
+                    "edge: ({}, {}) -> ({}, {})",
+                    point.edge.0.x,
+                    point.edge.0.y,
+                    point.edge.1.x,
+                    point.edge.1.y
+                );
+    
+                println!(
+                    "normal: ({}, {})",
+                    normal.x,
+                    normal.y
+                );
+    
+                println!(
+                    "velocity: ({}, {})",
+                    object_velocity.0,
+                    object_velocity.1
+                );
+    
+                println!("dot: {}", dot);
+                // let normal_velocity = 
+                //     object_velocity.0 * normal.x +
+                //     object_velocity.1 * normal.y;
+                
+                // new_force = (
+                //     object_velocity.0
+                //         - normal.x * normal_velocity * (1.0 + object.get_elasticity()),
+    
+                //     object_velocity.1
+                //         - normal.y * normal_velocity * (1.0 + object.get_elasticity()),
+                // );
+    
+    
+                //let push_angle = normal.y.atan2(normal.x);
+                
+                //println!("{:?}", point.angle);
+                //new_force = (normal.x * object_velocity.0 / object.get_elasticity(), normal.y * object_velocity.1 / object.get_elasticity());
+                //changed_direction = true;
             }
         }
 
 //        println!("{}", new_direction);
-        if changed_direction {
+        if let Some(new_force) = new_force {
             object.set_velocity(new_force);
         }
     }

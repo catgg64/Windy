@@ -5,7 +5,7 @@ use crate::{Coordinate2D, twodimensional::{collision::{collision_mesh_coordinate
 #[derive(Debug)]
 pub struct DetailedPoint {
     pub point: Coordinate2D,
-    pub angle: f64,
+    pub edge: Line2D,
     pub penetration: f64,
 }
 
@@ -33,14 +33,15 @@ pub fn detailed_collision_line_line(a: &Line2D, b: &Line2D) -> Option<Coordinate
     None
 }
 
-pub fn detailed_collision_mesh_line(a: &Mesh2D, b: &Line2D) -> Option<Coordinate2D> {
+pub fn detailed_collision_mesh_line(a: &Mesh2D, b: &Line2D) -> Option<(Coordinate2D, Line2D)> {
     for i in 0..a.coordinates.len() {
         let vc = &(a.coordinates[i] + a.origin);
         let vn = &(a.coordinates[(i + 1) % a.coordinates.len()] + a.origin);
+        let line = Line2D(*vc, *vn);
 
         let collision = detailed_collision_line_line(b, &Line2D(vn.clone(), vc.clone()));
-        if collision.is_some() {
-            return collision;
+        if let Some(collision) = collision {
+            return Some((collision, line));
         }
     }
 
@@ -56,13 +57,13 @@ pub fn detailed_collision_mesh_mesh(a: &Mesh2D, b: &Mesh2D) -> DetailedCollision
 
         let is_colliding = detailed_collision_mesh_line(b, &Line2D(vc.clone(), vn.clone())); 
         if let Some(is_colliding) = is_colliding {
-            collision.collision.push(DetailedPoint { point: is_colliding, angle: Line2D(*vc, *vn).angle(), penetration: 0.0 });
+            collision.collision.push(DetailedPoint { point: is_colliding.0, edge: is_colliding.1, penetration: 0.0 });
         }
     }
 
-    if collision_mesh_coordinate(a, &(b.coordinates[0] + b.origin)) {
-        collision.collision.push(DetailedPoint { point: b.coordinates[0] + b.origin, angle: 0.0, penetration: 0.0 });
-    }
+    // if collision_mesh_coordinate(a, &(b.coordinates[0] + b.origin)) {
+    //     collision.collision.push(DetailedPoint { point: b.coordinates[0] + b.origin, edge: Line2D(Coordinate2D { x: 0.0, y: 0.0 }, Coordinate2D { x: 10.0, y: 10.0 }), penetration: 0.0 });
+    // }
 
     collision
 }
