@@ -272,7 +272,6 @@ mod tests {
     
     #[test]
     fn value_between_ratio_1() {
-        println!("{}", crate::math::value_within_ratio(1.0, 2.0, 2.0, 4.0, 1.5));
-        assert!(crate::math::value_within_ratio(1.0, 2.0, 2.0, 4.0, 1.5) == 3.0)
+        assert!(crate::math::value_within_ratio(1.0, 2.0, 1.5) == 3.0)
     }
 }

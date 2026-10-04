@@ -26,121 +26,102 @@ pub fn calculate_physics_step<T: Object>(windy_context: &WindyContext, objects: 
     }
 }
 
-pub fn calculate_collision_pushback<T: Object>(objects: &mut Vec<T>, dt: Duration) {
-    for object in objects.iter_mut() {
-        let mut new_velocity = object.get_velocity();
+pub fn calculate_collision_pushback<T: Object>(
+    windy_context: &WindyContext,
+    objects: &mut Vec<T>,
+    dt: Duration,
+) {
+    let dt = dt.as_secs_f64();
 
-        if !object.get_collision_info()[0].collision.is_empty() {
+    for object in objects.iter_mut() {        
+        let edges: Vec<(f64, f64, f64, f64)> = {
+            let info = object.get_collision_info();
+            if info.is_empty() { continue; }
+            info[0].collision.iter()
+                .map(|c| (c.edge.0.x, c.edge.0.y, c.edge.1.x, c.edge.1.y))
+                .collect()
+        };
+        if edges.is_empty() { continue; }
+        if edges.len() == 2 {
+            let gravity = object.get_mass() / windy_context.weight_dividor;
+            let rest_speed = gravity * dt * 8.0;
+            let elasticity = object.get_elasticity();
+
+            let mut v = object.get_velocity();
+            let mut pos = object.get_position().clone();
+            let v0 = v; // velocity at the start of the frame
+            let prev_x = pos.x - v0.0 * dt;
+            let prev_y = pos.y - v0.1 * dt;
+
+            // 1. Build the list of UNIQUE surface normals (oriented toward the object).
+            let mut normals: Vec<(f64, f64)> = Vec::new();
+            for (x0, y0, x1, y1) in edges {
+                let (dx, dy) = (x1 - x0, y1 - y0);
+                let len = (dx * dx + dy * dy).sqrt();
+                if len < 1e-9 { continue; }
+
+                let (mut nx, mut ny) = (-dy / len, dx / len);
+
+                let mut side = (prev_x - x0) * nx + (prev_y - y0) * ny;
+                if side.abs() < 1e-6 {
+                    side = (pos.x - x0) * nx + (pos.y - y0) * ny;
+                }
+                if side.abs() < 1e-6 {
+                    side = if ny > 0.0 { -1.0 } else { 1.0 }; // y grows downward
+                }
+                if side < 0.0 { nx = -nx; ny = -ny; }
+
+                // Same surface already handled (two points on one edge)? Skip it.
+                if normals.iter().any(|&(ax, ay)| ax * nx + ay * ny > 0.999) {
+                    continue;
+                }
+                normals.push((nx, ny));
+            }
+
+            // 2. Push out and bounce once per unique surface, judged by the
+            //    start-of-frame velocity so processing order doesn't matter.
+            for &(nx, ny) in &normals {
+                let vn0 = v0.0 * nx + v0.1 * ny;
+                if vn0 >= 0.0 { continue; }
+
+                let resting = -vn0 < rest_speed;
+                let depth = -vn0 * dt * if resting { 0.8 } else { 1.0 };
+                pos.x += nx * depth;
+                pos.y += ny * depth;
+
+                let vn = v.0 * nx + v.1 * ny;
+                if vn < 0.0 {
+                    let e = if resting { 0.0 } else { elasticity };
+                    v.0 -= (1.0 + e) * vn * nx;
+                    v.1 -= (1.0 + e) * vn * ny;
+                }
+            }
+
+            // 3. Settle: remove any leftover velocity into any surface (no bounce).
+            //    This is what stops corner jitter.
+            for _ in 0..4 {
+                for &(nx, ny) in &normals {
+                    let vn = v.0 * nx + v.1 * ny;
+                    if vn < 0.0 {
+                        v.0 -= vn * nx;
+                        v.1 -= vn * ny;
+                    }
+                }
+            }
+
+            object.set_position(pos);
+            object.set_velocity(v);
+        }
+        else if edges.len() == 1 {
             let object_position = object.get_position();
             let object_velocity = object.get_velocity();
-            object.set_position(Coordinate2D { x: object_position.x - ((object_velocity.0 * dt.as_secs_f64()) * 1.001), y: object_position.y - ((object_velocity.1 * dt.as_secs_f64()) * 1.001) });
+            object.set_position(Coordinate2D { x: object_position.x - ((object_velocity.0 * dt) * 1.01), y: object_position.y - ((object_velocity.1 * dt) * 1.01) });
+
+            object.set_velocity(
+            (-object.get_velocity().0 * object.get_elasticity(),
+            -object.get_velocity().1 * object.get_elasticity(),
+            ));
         }
-
-        // if !object.get_collision_info()[0].collision.is_empty() {
-        //     let object_position = object.get_position();
-        //     let object_velocity = object.get_velocity();
-        //     object.set_position(Coordinate2D { x: object_position.x - (object_velocity.0 * dt.as_secs_f64()), y: object_position.y - (object_velocity.1 * dt.as_secs_f64()) });
-        // }
-        
-        
-        let collisions = object.get_collision_info();
-        if !collisions[0].collision.is_empty() {
-            if collisions[0].collision.len() == 2 {
-                let point = &collisions[0].collision[0];
-                let object_velocity = object.get_velocity();
-                    let movement = Coordinate2D {
-                        x: object_velocity.0,
-                        y: object_velocity.1,
-                    };
-                    
-                    let dx = point.edge.1.x - point.edge.0.x;
-                    let dy = point.edge.1.y - point.edge.0.y;
-
-                    let mut normal = Coordinate2D {
-                        x: -dy,
-                        y: dx,
-                    };
-
-                    let length = (normal.x * normal.x + normal.y * normal.y).sqrt();
-
-                    normal.x /= length;
-                    normal.y /= length;
-                    
-                    let dot =
-                        movement.x * normal.x +
-                        movement.y * normal.y;
-                    
-                    
-                    if dot > 0.0 {
-                        normal.x = -normal.x;
-                        normal.y = -normal.y;
-                    }
-
-                    let vn =
-                        new_velocity.0 * normal.x +
-                        new_velocity.1 * normal.y;
-
-                    if vn < 0.0 {
-                        let e = object.get_elasticity();
-
-                        
-                        new_velocity.0 -= (1.0 + e) * vn * normal.x;
-                        new_velocity.1 -= (1.0 + e) * vn * normal.y;
-                    
-                    }
-
-
-                //println!("dot: {}", dot);
-                // let normal_velocity = 
-                //     object_velocity.0 * normal.x +
-                //     object_velocity.1 * normal.y;
-                
-                // new_force = (
-                //     object_velocity.0
-                //         - normal.x * normal_velocity * (1.0 + object.get_elasticity()),
-
-                //     object_velocity.1
-                //         - normal.y * normal_velocity * (1.0 + object.get_elasticity()),
-                // );
-
-
-                //let push_angle = normal.y.atan2(normal.x);
-                
-                //println!("{:?}", point.angle);
-                //new_force = (normal.x * object_velocity.0 / object.get_elasticity(), normal.y * object_velocity.1 / object.get_elasticity());
-                //changed_direction = true;
-            }
-            else if collisions[0].collision.len() == 1 {
-                // let object_velocity = object.get_velocity();
-                
-                // let subtract_value = match (object_velocity.0 > 0.0, object_velocity.1 > 0.0) {
-                //     (true, false) => {
-                //         Coordinate2D{ x: -0.01, y: -0.01 }
-                //     }
-                //     (true, true) => {
-                //         Coordinate2D{ x: -0.01, y: 0.01 }
-                //     }
-                //     (false, false) => {
-                //         Coordinate2D{ x: 0.01, y: -0.01 }
-                //     }
-                //     (false, true) => {
-                //         Coordinate2D{ x: 0.01, y: 0.01 }
-                //     }
-                // };
-                //object.set_position(*object.get_position() - subtract_value);
-                new_velocity = (
-                    -new_velocity.0 / (1.0 + object.get_elasticity()),
-                    -new_velocity.1 / (1.0 + object.get_elasticity()),
-                );
-                println!("{:?}", new_velocity);
-            }
-        }
-
-        //if should_set {
-        //}
-
-//        println!("{}", new_direction);
-        object.set_velocity(new_velocity);
     }
 }
 
