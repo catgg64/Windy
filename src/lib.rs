@@ -158,7 +158,10 @@ pub trait Object {
     fn get_velocity(&self) -> (f64, f64);
     fn set_velocity(&mut self, velocity: (f64, f64));
     fn get_elasticity(&self) -> f64;
-    fn rotate(&mut self, angle: f64);
+    fn get_center_of_mass(&self) -> Coordinate2D;
+    fn set_torque(&self, torque: f64);
+    fn get_torque(&self) -> f64;
+    fn rotate(&mut self, angle: f64, origin: Coordinate2D);
     fn get_collision_info(&self) -> &Vec<twodimensional::collision::detail::DetailedCollision>;
 }
 
@@ -168,17 +171,18 @@ pub trait CollisionObject: Any {
 
 pub struct WindyContext {
     pub weight_dividor: f64,
+    pub torque_divisor: f64,
 }
 
 impl WindyContext {
     pub fn default() -> Self {
-        Self { weight_dividor: 10.0 }
+        Self { weight_dividor: 10.0, torque_divisor: 1.0 }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{assert_eq, println};
+    use std::{assert_eq};
 
     use super::*;
 
